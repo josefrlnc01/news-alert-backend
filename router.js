@@ -12,20 +12,8 @@ router.post('/api/aiservice',
 )
 
 
-
-
-
-
-
-
 router.get('/api/updates',
     ArticlesController.getArticlesByRadar
 )
-
-
-
-
-
-
 
 export default router

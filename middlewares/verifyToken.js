@@ -54,3 +54,33 @@ export function verifyToken(req, res, next) {
         });
     }
 }
+
+
+export function verifyRefreshToken (req, res, next) {
+    let token = req.cookies.refreshToken
+    if (!token) {
+        const authHeaders = req.headers.authorization
+        if (authHeaders && authHeaders.startsWith('Bearer ')) {
+            token = authHeaders.substring(7)
+        }
+    }
+    try {
+        const decoded = jwt.verify(token, process.env.REFRESH_TOKEN)
+
+        // 3. Verificar que el token tenga los campos necesarios
+        if (!decoded.id) {
+            console.error('❌ Token inválido: falta el ID del usuario');
+            return res.status(401).json({ 
+                success: false,
+                error: 'Token inválido' 
+            });
+        }
+        req.user = {
+            id : decoded.id,
+            email : decoded.email
+        }
+        return next()
+    } catch (error) {
+        return res.status(403).json({error : 'Hubo un error al verificar el refresh token'})
+    }
+}

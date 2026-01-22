@@ -15,3 +15,7 @@ userRouter.get('/',
 userRouter.post('/',
     UserController.createUser
 )
+
+userRouter.post('/login',
+    UserController.authenticateAndLogin
+)

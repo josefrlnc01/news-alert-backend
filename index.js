@@ -189,22 +189,26 @@ app.get('/api/events', (req, res) => {
 app.post('/api/refresh', async  (req, res) => {
   const pool = connectToDB()
   const refreshToken = req.cookies?.refreshToken;
+
   if(!refreshToken){
     return res.status(401).json({error : 'No hay token'})
   }
 
-  const storedToken = await pool.query(`
-    SELECT * FROM users WHERE refresh_token = $1
-    `,[refreshToken])
-
-      if (!storedToken) return res.status(403).json({ error: 'Token no válido' })
- 
+  try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN)
     const newAccesToken = jwt.sign(
       {id : decoded.id , email : decoded.email},
       process.env.ACCESS_TOKEN,
       {expiresIn : '15m'}
     )
+  const storedToken = await pool.query(`
+    SELECT * FROM users WHERE refresh_token = $1
+    AND id = $2
+    `,[refreshToken, decoded.id])
+
+    if (storedToken.rows.length === 0) return res.status(403).json({ error: 'Token no válido' })
+ 
+    
 
     if (newAccesToken){
       res
@@ -214,8 +218,20 @@ app.post('/api/refresh', async  (req, res) => {
         sameSite : 'lax',
         maxAge : 15 * 60 * 1000
       })
-      .json({succes : true, message: 'New token has send'})
+      .json({success : true, message: 'New token has send'})
     }
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Refresh token expirado' });
+    }
+    
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(403).json({ error: 'Token inválido' });
+    }
+    
+    return res.status(500).json({error : 'Hubo un error al obtener el token'})
+  }
+  
 
   
 })

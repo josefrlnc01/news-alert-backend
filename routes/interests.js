@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {  InterestsController } from "../controllers/interests.js";
-import { verifyToken } from "../middlewares/verifyToken.js";
+import { verifyRefreshToken, verifyToken } from "../middlewares/verifyToken.js";
 
 
 export const interestsRouter = Router();
@@ -18,6 +18,7 @@ interestsRouter.post('/',
 
 
 interestsRouter.delete('/',
+    verifyToken,
     InterestsController.deleteInterest
 )
 

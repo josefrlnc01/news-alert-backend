@@ -111,8 +111,5 @@ export class ArticlesController {
       }
   }
 }
-// Array para mantener las conexiones SSE
-export const getArticlesByRadar = async (req, res) => {
-   
-}
+
 

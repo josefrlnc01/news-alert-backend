@@ -42,6 +42,47 @@ export class UserModel {
         
         return {user, accessToken, refreshToken}
     }
+    static async authenticate (email, password) {
+      try{
+        const user = await pool.query(`
+          SELECT id, email, name, refresh_token
+          FROM users
+          WHERE email = $1
+        `, [email])
+        if (user.rows.length === 0) {
+          const error = new Error('Usuario no encontrado')
+          error.statusCode = 404
+          return error
+        }
+        return user.rows[0]
+      } catch (error) {
+        console.error('❌ Error en authenticate:', error);
+        throw error;
+      }
+    }
+
+    static async loginUser ({userData}) {
+       try{
+          const existingUser = await pool.query(`
+            SELECT id, email, name, refresh_token
+            FROM users
+            WHERE email = $1
+          `, [userData.email])
+
+          if (existingUser.rows.length === 0) {
+            const error = new Error('Usuario no encontrado')
+            error.statusCode = 404
+            return error
+          } 
+            // User exists, return user data
+            const data = await UserService.createUser({user: existingUser.rows[0]})
+           const {accessToken, refeshToken} = data
+
+           return {user: existingUser.rows[0], accessToken, refeshToken}
+       }catch(error){
+        throw new Error ('Error al iniciar sesión')
+       }
+    }
 
 
     static async getUser ({userId}) {
@@ -62,4 +103,6 @@ export class UserModel {
         user = user.rows[0]
         return user
     }
-}
+
+   
+} 

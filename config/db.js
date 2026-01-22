@@ -84,8 +84,8 @@ export const createDatabase = async () => {
         UNIQUE(user_id,title)
       )
     `);
-    console.log('✅ Tabla articlesSaveds creada');
-
+      console.log('✅ Tabla articlesSaveds creada');
+    
     console.log('🎉 Base de datos inicializada correctamente');
   } catch (error){
     console.error(error)
